@@ -1,57 +1,48 @@
 import yfinance as yf
-import pandas as pd
-import matplotlib.pyplot as plt
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-!pip install pandas_ta  # รันคำสั่งนี้หากยังไม่ได้ติดตั้ง
-import pandas_ta as ta
-!pip install -q -U google-generativeai
 import google.generativeai as genai
+from google.colab import userdata
 
-# สร้าง model+persona
-genai.configure(api_key="MY_API_KEY")
-model = genai.GenerativeModel('gemini-1.5-flash')
+# 1. เชื่อมต่อสมอง
+api_key = userdata.get('MY_API_KEY')
+genai.configure(api_key=api_key)
 
-# กำหนดค่า persona ที่นี่ (ตัวอย่าง: "You are a financial analyst...")
-persona = "You are a financial analyst providing concise stock analysis based on fundamental and technical data." # โปรดใส่คำอธิบาย persona ที่นี่
+# 2. ตั้ง Persona (System Instruction)
+model = genai.GenerativeModel(
+    model_name='gemini-1.5-flash',
+    system_instruction="""คุณคือนักวิเคราะห์การเงินมืออาชีพ 
+    จงวิเคราะห์ข้อมูลหุ้นด้วยความแม่นยำ มีเหตุผล และสรุปประเด็นสำคัญให้เข้าใจง่าย"""
+)
 
-system_instruction=persona
-
-# ย้ายส่วนนี้ไปอยู่ในลูป for เพื่อให้ ticker_symbol และ info ถูกกำหนดค่าแล้ว
-# promt=f"หุ้น {ticker_symbol} มีข้อมูลคือ: {info} ช่วยวิเคราะห์หุ้น"
-# response = model.generate_content(prompt)
-# print(response.text)
-
-
-# 1. ตั้งค่ารายชื่อหุ้นที่สนใจ
+# 3. รายชื่อหุ้นที่สนใจ
 my_stocks = ["SMR", "ASTS", "IONQ", "RKLB", "CCJ", "NVDA", "TMO"]
-data_list = []
 
-# ฟังก์ชันจัดประเภทหุ้นตามค่า P/E (ใช้ f-string และรูปแบบที่กระชับขึ้น)
-def check_growth(pe):
-    if pe is None or pe == 0:
-        return "Growth Stock (Early/No Profit)"
-    return "Growth Stock (High Expectation)" if pe > 30 
-    else "Value Stock (Standard)"
+# --- ส่วนสำหรับรับคำถามจากไอด้า ---
+print("=== ยินดีต้อนรับสู่ระบบวิเคราะห์หุ้นอัจฉริยะ ===")
+user_question = input("วันนี้อยากให้ AI วิเคราะห์หุ้นด้วยมุมมองไหนเป็นพิเศษไหม? (เช่น วิเคราะห์ความเสี่ยง, วิเคราะห์ระยะยาว, หรือเปรียบเทียบ): ")
 
-# 2. เริ่มดึงข้อมูลและพล็อตกราฟ + แสดงข้อมูลพื้นฐานของหุ้นทุกตัวในลูป
+# 4. ลูปการทำงาน
 for ticker_symbol in my_stocks:
-    print(f"\nกำลังประมวลผลหุ้น: {ticker_symbol}...")
-
-    # ดึงข้อมูลจาก yfinance (เวอร์ชันปัจจุบันแนะนำให้สร้างออบเจกต์ Ticker ไว้ก่อน)
+    print(f"\n--- กำลังวิเคราะห์: {ticker_symbol} ---")
+    
+    # ดึง Data
     stock = yf.Ticker(ticker_symbol)
-
-    # --- ส่วนที่ 1: ดึงข้อมูลพื้นฐาน (Fundamental Data) ---
-    # ดึงข้อมูล info มาเก็บไว้ในตัวแปรเดียวเพื่อลดจำนวนการ Request ไปที่เซิร์ฟเวอร์
     stock_info = stock.info
-    pe_ratio = stock_info.get('trailingPE', 0)
-
-    # วิธีส่งข้อมูลเข้าไป (ภายใน loop)
-    # ใช้ stock_info แทน info, แก้ promt เป็น prompt และส่ง system_instruction
-    prompt = f"หุ้น {ticker_symbol} มีข้อมูลคือ: {stock_info} ช่วยวิเคราะห์หุ้น"
-    response = model.generate_content(prompt, system_instruction=system_instruction)
-    print(f"การวิเคราะห์หุ้น {ticker_symbol} โดย AI:")
+    
+    # เตรียม Prompt แบบรวมคำสั่ง Standard + คำถามจากไอด้า
+    prompt = f"""
+    ช่วยวิเคราะห์หุ้น {ticker_symbol} ตามข้อมูลพื้นฐานนี้:
+    - Sector: {stock_info.get('sector', 'N/A')}
+    - P/E Ratio: {stock_info.get('trailingPE', 'N/A')}
+    - Market Cap: {stock_info.get('marketCap', 'N/A')}
+    
+    คำถามพิเศษที่ผู้ใช้ต้องการทราบ: {user_question}
+    
+    หากไม่มีคำถามพิเศษ ให้วิเคราะห์ภาพรวมและโอกาสเติบโตให้ด้วย
+    """
+    
+    # รัน AI
+    response = model.generate_content(prompt)
     print(response.text)
+    print("-" * 50)
 
-    data_list.append({
 
