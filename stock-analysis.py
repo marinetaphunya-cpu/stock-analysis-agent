@@ -31,7 +31,8 @@ data_list = []
 def check_growth(pe):
     if pe is None or pe == 0:
         return "Growth Stock (Early/No Profit)"
-    return "Growth Stock (High Expectation)" if pe > 30 else "Value Stock (Standard)"
+    return "Growth Stock (High Expectation)" if pe > 30 
+    else "Value Stock (Standard)"
 
 # 2. เริ่มดึงข้อมูลและพล็อตกราฟ + แสดงข้อมูลพื้นฐานของหุ้นทุกตัวในลูป
 for ticker_symbol in my_stocks:
