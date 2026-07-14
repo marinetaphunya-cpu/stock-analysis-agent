@@ -1,6 +1,6 @@
 
 import yfinance as yf
-import pandas_ta as ta
+#import pandas_ta as ta
 
 def get_stock_price(ticker: str) -> float:
   """
@@ -81,9 +81,9 @@ def get_technical_indicators(ticker: str):
     if len(df) < 50:
         return "ข้อมูลไม่เพียงพอสำหรับคำนวณ sma 50"
     # คำนวณ RSI
-    df['RSI'] = ta.rsi(df['Close'], length=14)
+    #df['RSI'] = ta.rsi(df['Close'], length=14)
     # คำนวณ SMA 50 วัน
-    df['SMA_50'] = ta.sma(df['Close'], length=50)
+    #df['SMA_50'] = ta.sma(df['Close'], length=50)
 
     latest = df.iloc[-1]
     return {
@@ -99,8 +99,8 @@ def plot_stock_chart(ticker):
     df = yf.download(ticker, period="5y", interval="1d")
 
     # คำนวณ RSI และ SMA50 เหมือนเดิม
-    df['RSI'] = ta.rsi(df['Close'], length=14)
-    df['SMA_50'] = ta.sma(df['Close'], length=50)
+    #df['RSI'] = ta.rsi(df['Close'], length=14)
+    #df['SMA_50'] = ta.sma(df['Close'], length=50)
 
     # สร้างกราฟ
     fig = go.Figure()
