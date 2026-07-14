@@ -10,7 +10,7 @@ from Motartools import get_technical_indicators # ใส่ชื่อฟัง
 api_key = st.secrets["MY_API_KEY"] 
 client = genai.Client(api_key=api_key)
 
-MODEL_ID = 'models/gemini-3.1-flash-lite'
+MODEL_ID = 'models/gemini-3.5-flash'
 
 def ask_motar(prompt, tools_list, persona):
     response = client.models.generate_content(
