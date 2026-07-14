@@ -1,6 +1,6 @@
 
 import yfinance as yf
-import pandas_ta as ta
+#import pandas_ta as ta
 
 def get_stock_price(ticker: str) -> float:
   """
