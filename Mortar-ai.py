@@ -4,7 +4,7 @@ from google import genai
 from google.genai import types
 import os
 from personatar import my_persona
-from tools import get_technical_indicators # ใส่ชื่อฟังก์ชันที่เหลือเพิ่มเข้าไปได้เลย
+from Motartools import get_technical_indicators # ใส่ชื่อฟังก์ชันที่เหลือเพิ่มเข้าไปได้เลย
 
 # โค้ดใหม่ที่ต้องใส่แทน
 api_key = st.secrets["MY_API_KEY"] 
