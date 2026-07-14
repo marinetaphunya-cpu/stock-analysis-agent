@@ -23,7 +23,7 @@ def ask_motar(prompt, tools_list, persona):
     return response.text
 
 # --- หน้าจอแสดงผล Streamlit ---
-st.title("🩺 Dashboard หมอต้า")
+st.title("🩺 วิเคราะห์การลงทุนกับหมอต้า")
 ticker = st.text_input("ชื่อหุ้น (เช่น RKLB):", "RKLB").upper()
 
 if st.button("วิเคราะห์"):
