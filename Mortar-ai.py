@@ -3,7 +3,7 @@ import streamlit as st
 from google import genai
 from google.genai import types
 import os
-from dotenv import 
+from dotenv import load_dotenv
 from persona import my_persona
 from tools import get_technical_indicators # ใส่ชื่อฟังก์ชันที่เหลือเพิ่มเข้าไปได้เลย
 
