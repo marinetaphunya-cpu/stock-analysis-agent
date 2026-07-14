@@ -7,8 +7,10 @@ from dotenv import load_dotenv
 from persona import my_persona
 from tools import get_technical_indicators # ใส่ชื่อฟังก์ชันที่เหลือเพิ่มเข้าไปได้เลย
 
-load_dotenv()
-client = genai.Client(api_key=os.getenv('MY_API_KEY'))
+# โค้ดใหม่ที่ต้องใส่แทน
+api_key = st.secrets["MY_API_KEY"] 
+client = genai.Client(api_key=api_key)
+
 MODEL_ID = 'models/gemini-3.5-flash'
 
 def ask_motar(prompt, tools_list, persona):
