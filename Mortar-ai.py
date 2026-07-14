@@ -25,11 +25,11 @@ def ask_motar(prompt, tools_list, persona):
 
 # --- หน้าจอแสดงผล Streamlit ---
 st.title("🩺 วิเคราะห์การลงทุนกับหมอต้า💸")
-ticker = st.text_input("ชื่อหุ้น📈📉:", "RKLB").upper()
+ticker = st.text_input("วันนี้คุยอะไรเกี่ยวกับหุ้นดี📈📉:", "RKLB").upper()
 
 if st.button("วิเคราะห์⌛️"):
-    tech_data = get_technical_indicators(ticker)
-    prompt = f"วิเคราะห์หุ้น {ticker} ข้อมูลเทคนิค: {tech_data}"
+    #tech_data = get_technical_indicators(ticker)
+    #prompt = f"วิเคราะห์หุ้น {ticker} ข้อมูลเทคนิค: {tech_data}"
     
     # ส่งเข้าสมองหมอต้า
     with st.spinner('หมอต้ากำลังวิเคราะห์อยู่...🫪'):
