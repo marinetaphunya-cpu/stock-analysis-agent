@@ -33,5 +33,5 @@ if st.button("วิเคราะห์⌛️"):
     
     # ส่งเข้าสมองหมอต้า
     with st.spinner('หมอต้ากำลังวิเคราะห์อยู่...🫪'):
-        result = ask_motar(prompt, [get_technical_indicators], my_persona)
+        result = ask_motar(prompt)#, [get_technical_indicators], my_persona)
         st.write(result)
