@@ -3,5 +3,4 @@ yfinance
 pandas
 pandas_ta
 plotly
-python-dotenv
-
+streamlit
