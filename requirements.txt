@@ -2,8 +2,6 @@ streamlit
 google-genai
 yfinance
 pandas
-pandas_ta
 plotly
-numpy<2.0
 
 
