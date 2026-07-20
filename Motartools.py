@@ -1,8 +1,25 @@
 
 import datetime
 import yfinance as yf
-import pandas_ta as ta
+import pandas as pd
 import plotly.graph_objects as go
+
+
+def _calc_rsi(close: pd.Series, length: int = 14) -> pd.Series:
+    """คำนวณ RSI เองโดยไม่พึ่ง pandas_ta"""
+    delta = close.diff()
+    gain = delta.clip(lower=0)
+    loss = -delta.clip(upper=0)
+    avg_gain = gain.ewm(alpha=1 / length, min_periods=length, adjust=False).mean()
+    avg_loss = loss.ewm(alpha=1 / length, min_periods=length, adjust=False).mean()
+    rs = avg_gain / avg_loss
+    rsi = 100 - (100 / (1 + rs))
+    return rsi
+
+
+def _calc_sma(close: pd.Series, length: int = 50) -> pd.Series:
+    """คำนวณ SMA เองโดยไม่พึ่ง pandas_ta"""
+    return close.rolling(window=length).mean()
 
 
 def get_stock_price(ticker: str) -> str:
@@ -114,8 +131,8 @@ def get_technical_indicators(ticker: str):
     if len(df) < 50:
         return "ข้อมูลไม่เพียงพอสำหรับคำนวณ SMA 50"
 
-    df['RSI'] = ta.rsi(df['Close'], length=14)
-    df['SMA_50'] = ta.sma(df['Close'], length=50)
+    df['RSI'] = _calc_rsi(df['Close'], length=14)
+    df['SMA_50'] = _calc_sma(df['Close'], length=50)
 
     latest = df.iloc[-1]
     return {
@@ -138,7 +155,7 @@ def plot_stock_chart(ticker: str):
     df = yf.download(ticker, period="5y", interval="1d", auto_adjust=True)
     df = _clean_columns(df)
 
-    df['SMA_50'] = ta.sma(df['Close'], length=50)
+    df['SMA_50'] = _calc_sma(df['Close'], length=50)
 
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=df.index, y=df['Close'], name='Price', line=dict(color='blue')))
