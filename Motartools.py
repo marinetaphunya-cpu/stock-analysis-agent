@@ -178,3 +178,4 @@ def get_peer_analysis(ticker: str) -> str:
     stock = yf.Ticker(ticker)
     industry = stock.info.get('industry', 'unknown')
     return f"กำลังวิเคราะห์คู่แข่งของ {ticker} ในกลุ่ม {industry}"
+
