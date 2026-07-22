@@ -12,34 +12,36 @@ api_key = st.secrets["MY_API_KEY"]
 client = genai.Client(api_key=api_key)
 
 MODEL_ID = 'gemini-3.5-flash'
+FALLBACK_MODEL_ID = 'gemini-2.5-flash'  # ใช้เมื่อโมเดลหลักโดน 503 high demand
 
 
 def ask_motar(prompt, persona, max_retries=3):
     """
     เรียก Gemini ให้วิเคราะห์ พร้อม retry เมื่อเจอ ServerError ชั่วคราว
-    (ไม่ส่ง tools ซ้ำ เพราะข้อมูลถูกดึงมาและใส่ใน prompt เรียบร้อยแล้ว)
+    ถ้าโมเดลหลัก (gemini-3.5-flash) ยัง 503 อยู่ทุกครั้ง จะลอง fallback ไป gemini-2.5-flash
     """
-    last_error = None
-    for attempt in range(max_retries):
-        try:
-            response = client.models.generate_content(
-                model=MODEL_ID,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    system_instruction=persona,
-                ),
-            )
-            return response.text
-        except genai_errors.ServerError as e:
-            last_error = e
-            if attempt < max_retries - 1:
-                time.sleep(2 * (attempt + 1))  # รอนานขึ้นทีละรอบก่อนลองใหม่
-                continue
-        except genai_errors.ClientError as e:
-            # request ผิดรูปแบบ / api key ผิด / เกิน quota -> ไม่ควร retry
-            raise RuntimeError(f"เรียก Gemini ไม่สำเร็จ (ClientError): {e}") from e
+    for model_id in (MODEL_ID, FALLBACK_MODEL_ID):
+        last_error = None
+        for attempt in range(max_retries):
+            try:
+                response = client.models.generate_content(
+                    model=model_id,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        system_instruction=persona,
+                    ),
+                )
+                return response.text
+            except genai_errors.ServerError as e:
+                last_error = e
+                if attempt < max_retries - 1:
+                    time.sleep(3 * (attempt + 1))  # รอนานขึ้นทีละรอบ: 3, 6 วิ
+                    continue
+            except genai_errors.ClientError as e:
+                raise RuntimeError(f"เรียก Gemini ไม่สำเร็จ (ClientError, model={model_id}): {e}") from e
+        # โมเดลนี้ล้มเหลวครบทุก retry แล้ว ไปลองโมเดลถัดไป (ถ้ามี)
 
-    raise RuntimeError(f"เรียก Gemini ไม่สำเร็จหลังลอง {max_retries} ครั้ง (ServerError): {last_error}")
+    raise RuntimeError(f"เรียก Gemini ไม่สำเร็จทั้ง {MODEL_ID} และ {FALLBACK_MODEL_ID} (ServerError): {last_error}")
 
 
 # --- หน้าจอแสดงผล Streamlit ---
