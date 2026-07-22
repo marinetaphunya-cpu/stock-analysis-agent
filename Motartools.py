@@ -5,8 +5,10 @@ import pandas as pd
 import plotly.graph_objects as go
 
 
-def _calc_rsi(close: pd.Series, length: int = 14) -> pd.Series:
+def _calc_rsi(close, length: int = 14) -> pd.Series:
     """คำนวณ RSI เองโดยไม่พึ่ง pandas_ta"""
+    if isinstance(close, pd.DataFrame):
+        close = close.iloc[:, 0]  # กันกรณี column ซ้ำ/MultiIndex หลุดมา
     delta = close.diff()
     gain = delta.clip(lower=0)
     loss = -delta.clip(upper=0)
@@ -17,8 +19,10 @@ def _calc_rsi(close: pd.Series, length: int = 14) -> pd.Series:
     return rsi
 
 
-def _calc_sma(close: pd.Series, length: int = 50) -> pd.Series:
+def _calc_sma(close, length: int = 50) -> pd.Series:
     """คำนวณ SMA เองโดยไม่พึ่ง pandas_ta"""
+    if isinstance(close, pd.DataFrame):
+        close = close.iloc[:, 0]  # กันกรณี column ซ้ำ/MultiIndex หลุดมา
     return close.rolling(window=length).mean()
 
 
@@ -108,13 +112,6 @@ def get_comprehensive_financials(ticker: str) -> str:
     return summary
 
 
-def _clean_columns(df):
-    """Helper: จัดการ MultiIndex columns ที่ yfinance บางเวอร์ชันคืนมา"""
-    if hasattr(df.columns, 'nlevels') and df.columns.nlevels > 1:
-        df.columns = df.columns.get_level_values(0)
-    return df
-
-
 def get_technical_indicators(ticker: str):
     """
     ใช้สำหรับดึงข้อมูลและดูจังหวะเข้าซื้อ (RSI, Moving Average)
@@ -125,10 +122,10 @@ def get_technical_indicators(ticker: str):
     Returns:
         dict: ค่า RSI, SMA 50 วัน และราคาปิดล่าสุด
     """
-    df = yf.download(ticker, period="5y", interval="1d", auto_adjust=True)
-    df = _clean_columns(df)
+    stock = yf.Ticker(ticker)
+    df = stock.history(period="5y", interval="1d", auto_adjust=True)
 
-    if len(df) < 50:
+    if df.empty or len(df) < 50:
         return "ข้อมูลไม่เพียงพอสำหรับคำนวณ SMA 50"
 
     df['RSI'] = _calc_rsi(df['Close'], length=14)
@@ -152,8 +149,8 @@ def plot_stock_chart(ticker: str):
     Returns:
         plotly.graph_objects.Figure: กราฟราคาหุ้นพร้อมเส้น SMA 50
     """
-    df = yf.download(ticker, period="5y", interval="1d", auto_adjust=True)
-    df = _clean_columns(df)
+    stock = yf.Ticker(ticker)
+    df = stock.history(period="5y", interval="1d", auto_adjust=True)
 
     df['SMA_50'] = _calc_sma(df['Close'], length=50)
 
@@ -178,4 +175,3 @@ def get_peer_analysis(ticker: str) -> str:
     stock = yf.Ticker(ticker)
     industry = stock.info.get('industry', 'unknown')
     return f"กำลังวิเคราะห์คู่แข่งของ {ticker} ในกลุ่ม {industry}"
-
