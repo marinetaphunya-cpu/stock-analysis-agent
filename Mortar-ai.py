@@ -38,10 +38,19 @@ def ask_motar(prompt, persona, max_retries=3):
                     time.sleep(3 * (attempt + 1))  # รอนานขึ้นทีละรอบ: 3, 6 วิ
                     continue
             except genai_errors.ClientError as e:
+                last_error = e
+                err_text = str(e)
+                if "429" in err_text or "RESOURCE_EXHAUSTED" in err_text:
+                    # โควตาโมเดลนี้หมด -> ไปลอง fallback model แทน ไม่ต้อง retry ซ้ำโมเดลเดิม
+                    break
+                # ClientError อื่นๆ (api key ผิด, request ผิดรูปแบบ) -> ไม่มีประโยชน์ที่จะลองโมเดลอื่น
                 raise RuntimeError(f"เรียก Gemini ไม่สำเร็จ (ClientError, model={model_id}): {e}") from e
         # โมเดลนี้ล้มเหลวครบทุก retry แล้ว ไปลองโมเดลถัดไป (ถ้ามี)
 
-    raise RuntimeError(f"เรียก Gemini ไม่สำเร็จทั้ง {MODEL_ID} และ {FALLBACK_MODEL_ID} (ServerError): {last_error}")
+    raise RuntimeError(
+        f"เรียก Gemini ไม่สำเร็จทั้ง {MODEL_ID} และ {FALLBACK_MODEL_ID} "
+        f"(อาจเป็นเพราะโควตาฟรีของทั้งสองโมเดลหมดสำหรับวันนี้): {last_error}"
+    )
 
 
 # --- หน้าจอแสดงผล Streamlit ---
