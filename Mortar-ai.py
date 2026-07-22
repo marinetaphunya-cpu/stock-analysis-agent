@@ -12,7 +12,7 @@ api_key = st.secrets["MY_API_KEY"]
 client = genai.Client(api_key=api_key)
 
 MODEL_ID = 'gemini-3.5-flash'
-FALLBACK_MODEL_ID = 'gemini-2.5-flash'  # ใช้เมื่อโมเดลหลักโดน 503 high demand
+FALLBACK_MODEL_ID = 'gemini-3.5-flash-lite'  # โมเดลเบา เร็ว โควตาฟรีมักสูงกว่า ใช้เมื่อโมเดลหลักโดน 503/429
 
 
 def ask_motar(prompt, persona, max_retries=3):
@@ -68,3 +68,4 @@ if st.button("วิเคราะห์⌛️"):
             st.error(f"เกิดข้อผิดพลาดตอนคุยกับ Gemini: {e}")
         except Exception as e:
             st.error(f"เกิดข้อผิดพลาดที่ไม่คาดคิด: {e}")
+
